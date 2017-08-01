@@ -12,6 +12,10 @@ Early testing version:
 
 ![im smart](./loool.png)
 
+Working server list ping (`0xFE` Client -> Server, `0xFF` Server -> Client)
+
+![Working server list ping to show status](./serverlist.png)
+
 Logging into the server:
 
 ![logging in](./login.gif)
