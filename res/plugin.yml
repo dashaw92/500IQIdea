@@ -1,0 +1,3 @@
+name: ServerPlugin
+main: me.daniel.server.ServerPlugin
+version: 1.0
