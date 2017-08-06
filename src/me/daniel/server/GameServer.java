@@ -30,9 +30,7 @@ public class GameServer {
 			public void run() {
 				try { 
 					while(true) {
-						System.out.println("Waiting for a connection.");
 						Socket client = socket.accept();
-						System.out.println("Accepted a player.");
 						new PlayerThread(new Player(client));
 					}
 				} catch(IOException e) {

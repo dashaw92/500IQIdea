@@ -15,6 +15,7 @@ public class PlayerThread implements Runnable {
 	private static List<PlayerThread> players = new ArrayList<>();
 	private Player player;
 	private Thread thread;
+	private boolean connected = false; //Is the player already in play state? @53
 	
 	public PlayerThread(Player player) {
 		this.player = player;
@@ -49,6 +50,7 @@ public class PlayerThread implements Runnable {
 		while(player.isConnected()) {
 			switch(player.read()) {
 				case 0x02:
+					if(connected) break; //TODO maybe not needed anymore due to DataInputStream vs InputStreamReader?
 					if(ServerPlugin.server.getUsers() >= ServerPlugin.server.getSlots()) {
 						player.send(new SPacketKick("Server is full."));
 						disconnect();
@@ -60,8 +62,9 @@ public class PlayerThread implements Runnable {
 					player.read();
 					player.send(new SPacketPlayerLookAndPosition());
 					ServerPlugin.server.setUsers(ServerPlugin.server.getUsers()+1);
+					connected = true;
 					break;
-				case 0xFE: //Need to figure out why my server reads this as 0xFD. 0xFD here doesn't let client login.
+				case 0xFE:
 					player.send(new SPacketServerListPing(ServerPlugin.server.getMotd(), ServerPlugin.server.getUsers(), ServerPlugin.server.getSlots()));
 					disconnect();
 					break;
