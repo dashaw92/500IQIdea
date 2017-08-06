@@ -3,7 +3,9 @@ package me.daniel.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
+import me.daniel.server.net.Packet;
 import me.daniel.server.net.SPacketKick;
 import me.daniel.server.wrapper.Player;
 
@@ -31,9 +33,12 @@ public class GameServer {
 				try { 
 					while(true) {
 						Socket client = socket.accept();
+						client.setTcpNoDelay(true);
 						new PlayerThread(new Player(client));
 					}
-				} catch(IOException e) {
+				} 
+				catch(SocketException e) {} 
+				catch(IOException e) {
 					e.printStackTrace();
 				}
 			}
@@ -50,6 +55,12 @@ public class GameServer {
 		try {
 			socket.close();
 		} catch (IOException e) {
+		}
+	}
+	
+	public void broadcast(Packet p) {
+		for(PlayerThread pt : PlayerThread.getPlayers()) {
+			pt.getPlayer().send(p);
 		}
 	}
 	

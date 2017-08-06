@@ -3,7 +3,9 @@ package me.daniel.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.daniel.server.net.SPacketChat;
 import me.daniel.server.net.SPacketHandshake;
+import me.daniel.server.net.SPacketKeepalive;
 import me.daniel.server.net.SPacketKick;
 import me.daniel.server.net.SPacketLogin;
 import me.daniel.server.net.SPacketPlayerLookAndPosition;
@@ -16,6 +18,7 @@ public class PlayerThread implements Runnable {
 	private Player player;
 	private Thread thread;
 	private boolean connected = false; //Is the player already in play state? @53
+	private long keepalive;
 	
 	public PlayerThread(Player player) {
 		this.player = player;
@@ -48,7 +51,18 @@ public class PlayerThread implements Runnable {
 	@Override
 	public void run() {
 		while(player.isConnected()) {
+			//Once every 5 seconds
+			if(connected && System.currentTimeMillis() - keepalive > 5000) {
+				player.send(new SPacketKeepalive(2)); //TODO: Implement random id here
+				keepalive = System.currentTimeMillis();
+			}
 			switch(player.read()) {
+				case 0x00:
+					byte[] read = new byte[4];
+					for(int i = 0; i < 4; i++) {
+						read[i] = (byte)player.read();
+					}
+					break;
 				case 0x02:
 					if(connected) break; //TODO maybe not needed anymore due to DataInputStream vs InputStreamReader?
 					if(ServerPlugin.server.getUsers() >= ServerPlugin.server.getSlots()) {
@@ -63,6 +77,10 @@ public class PlayerThread implements Runnable {
 					player.send(new SPacketPlayerLookAndPosition());
 					ServerPlugin.server.setUsers(ServerPlugin.server.getUsers()+1);
 					connected = true;
+					break;
+				case 0x03:
+					System.out.println("Chat packet, read: " + player.read());
+					player.send(new SPacketChat("Testing :D"));
 					break;
 				case 0xFE:
 					player.send(new SPacketServerListPing(ServerPlugin.server.getMotd(), ServerPlugin.server.getUsers(), ServerPlugin.server.getSlots()));

@@ -42,11 +42,11 @@ public class Player {
 	public void send(byte[] b) {
 		try {
 			dos.write(b);
-			Thread.sleep(10); //Force the packets to be sent as their own rather than mushed together. F*ck you tcp stack >;(
+//			Thread.sleep(10); //Force the packets to be sent as their own rather than mushed together. F*ck you tcp stack >;(
 			dos.flush();
 		} catch (SocketException e) {} 
 		  catch (IOException e) {}
-		  catch (InterruptedException e) {}
+//		  catch (InterruptedException e) {}
 	}
 	
 	public int read() {
