@@ -5,8 +5,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
+import java.util.HexFormat;
 
 import me.daniel.server.net.Packet;
+import me.daniel.server.net.SPacketKeepalive;
 
 public class Player {
 	private Socket socket;
@@ -36,6 +39,10 @@ public class Player {
 	}
 	
 	public void send(Packet p) {
+		if(!(p instanceof SPacketKeepalive)) {
+			var hex = HexFormat.of().withUpperCase().withDelimiter(", ");
+			System.out.println("Sending " + p.getClass().getSimpleName() + ": [" + hex.formatHex(p.getBytes()) + "]");
+		}
 		send(p.getBytes());
 	}
 	

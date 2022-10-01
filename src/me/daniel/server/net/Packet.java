@@ -1,34 +1,66 @@
 package me.daniel.server.net;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Packet {
-	
-	protected byte[] bytes;
+
+	private final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+	private final DataOutputStream stream = new DataOutputStream(bytes);
+
+
+	public Packet(int id) {
+		this.id = (byte)id;
+	}
+
+
+	protected List<Object> data = new ArrayList<>();
+	protected byte id;
 	
 	public byte[] getBytes() {
-		return bytes;
+		try {
+			stream.writeByte(id);
+
+			for(var obj : data) {
+				if(obj instanceof Byte byt) {
+					stream.writeByte(byt);
+				} else if(obj instanceof Short shrt) {
+					stream.writeShort(shrt);
+				} else if(obj instanceof Integer num) {
+					stream.writeInt(num);
+				} else if(obj instanceof Long lng) {
+					stream.writeLong(lng);
+				} else if(obj instanceof Float fl) {
+					stream.writeFloat(fl);
+				} else if(obj instanceof Double dbl) {
+					stream.writeDouble(dbl);
+				} else if(obj instanceof String str) {
+					writeString16(str);
+				} else if(obj instanceof Boolean bool) {
+					stream.writeBoolean(bool);
+				} else if(obj instanceof byte[] arr) {
+					stream.write(arr);
+				} else {
+					if(obj == null) continue;
+					System.err.println("Unknown object type " + obj.getClass().getSimpleName());
+				}
+			}
+
+			stream.close();
+		} catch(IOException ignored) {}
+		return bytes.toByteArray();
 	}
-	
-	//Helper function for subclasses
-	public static byte[] pad(byte id, boolean length, String msg) {
-		// This packet is (1 byte for id, 1 byte for length if true, and msg.length) * 2
-		// for every 0x00
-		byte[] arr = new byte[(1 + msg.length() + (length ? 1 : 0)) * 2];
-		arr[0] = id;
-		int index = 2;
-		if(length) {
-			index = 4;
-			arr[2] = (byte)msg.length();
+
+	private void writeString16(String str) {
+		try {
+			stream.writeShort(str.length());
+			stream.writeChars(str);
+		} catch (IOException e) {
+			System.err.println("Failed to write string16 " + str);
 		}
-		for (int i = 0; i < msg.length(); i++) {
-			arr[index + (i * 2)] = (byte)msg.charAt(i);
-		}
-		return arr;
 	}
-	
-	public static int decode(byte[] b) {
-		ByteBuffer bb = ByteBuffer.wrap(b);
-        return bb.getInt();
-	}
+
 }
