@@ -1,14 +1,14 @@
 package me.daniel.server.net;
 
 public class SPacketKick extends Packet {
-	
-	public SPacketKick(String msg) {
-		super(0xFF);
-		if(msg == null || msg.trim().isEmpty()) {
-			msg = "Kicked from the server.";
-		}
 
-		data.add(msg);
+    public SPacketKick(String msg) {
+        super(0xFF);
+        if (msg == null || msg.trim().isEmpty()) {
+            msg = "Kicked from the server.";
+        }
+
+        data.add(msg);
 //		bytes = new byte[] {
 //				(byte)0x00, (byte)0x17, (byte)0x00,
 //				(byte)0x41, (byte)0x00, (byte)0x20, (byte)0x00, (byte)0x4d, (byte)0x00, (byte)0x69, (byte)0x00, (byte)0x6e, (byte)0x00, (byte)0x65, (byte)0x00, (byte)0x63, (byte)0x00, (byte)0x72, (byte)0x00,
@@ -16,5 +16,5 @@ public class SPacketKick extends Packet {
 //				(byte)0x65, (byte)0x00, (byte)0x72, (byte)0x00, (byte)0xa7, (byte)0x00, (byte)0x30, (byte)0x00, (byte)0xa7, (byte)0x00, (byte)0x32, (byte)0x00, (byte)0x30
 //
 //		};
-	}
+    }
 }
