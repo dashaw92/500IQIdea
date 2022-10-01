@@ -13,10 +13,6 @@ This plugin was originally just a proof of concept, but now I plan on writing an
 
 Drop the plugin jar into your server's plugins folder, reload the server, and connect to the same IP as your server port `25065`.
 
-Early testing version:
-
-![im smart](./loool.png)
-
 Working server list ping (`0xFE` Client -> Server, `0xFF` Server -> Client)
 
 ![Working server list ping to show status](./serverlist.png)
@@ -29,6 +25,7 @@ Logging into the server:
 
 I built this against `craftbukkit-1.0.0-SNAPSHOT.jar`
 
-### License
+### Licensing
 
-MIT, have fun.
+Plugin: MIT, have fun.
+Wiki.vg documentation: CC BY-SA 4.0 - No changes have been made, it is directly saved from web archive for ease-of-access purposes only. Documentation belongs to the wiki.vg contributors exclusively, and I claim no ownership of the documentation.
