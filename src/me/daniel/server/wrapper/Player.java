@@ -12,6 +12,10 @@ public class Player {
     public final McOutputStream os;
     public final McInputStream is;
 
+    public boolean onGround = true;
+    public double x, y, z, stance;
+    public float pitch, yaw;
+
     public Player(Socket socket) {
         this.socket = socket;
 
@@ -42,10 +46,6 @@ public class Player {
     }
 
     public void send(Packet p) {
-        if (!(p instanceof SPacketKeepalive)) {
-            var hex = HexFormat.of().withUpperCase().withDelimiter(", ");
-            System.out.println("Sending " + p.getClass().getSimpleName() + ": [" + hex.formatHex(p.getBytes()) + "]");
-        }
         send(p.getBytes());
     }
 

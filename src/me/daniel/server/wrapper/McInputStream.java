@@ -1,8 +1,10 @@
 package me.daniel.server.wrapper;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 public final class McInputStream extends DataInputStream {
 
@@ -23,6 +25,37 @@ public final class McInputStream extends DataInputStream {
             System.err.println("Failed to close input stream.");
             ex.printStackTrace();
         }
+    }
+
+    public Slot readSlot() {
+        try {
+            short id = readShort();
+            if(id == -1) return null;
+            short count = readShort();
+            short damage = readShort();
+
+            var item = new Slot(id, count, damage);
+            if(!item.canAcceptEnchants()) return item;
+
+            short nbtLen = readShort();
+            if(nbtLen == -1) return item;
+
+            byte[] nbt = new byte[nbtLen];
+            int read = read(nbt);
+            if(read != nbtLen) {
+                System.err.println("Did not read expected amount of NBT data from slot?? Got %d, expected %d.".formatted(read, nbtLen));
+                return item;
+            }
+
+            try(GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(nbt))) {
+                
+            }
+        } catch(IOException ex) {
+            System.err.println("Failed to read slot from input stream.");
+            ex.printStackTrace();
+            return null;
+        }
+        return null;
     }
 
     public String readString16() {
@@ -65,8 +98,8 @@ public final class McInputStream extends DataInputStream {
         try {
             return readInt();
         } catch(IOException ex) {
-//            System.err.println("Failed to read int from input stream.");
-//            ex.printStackTrace();
+            System.err.println("Failed to read int from input stream.");
+            ex.printStackTrace();
             return -1;
         }
     }
