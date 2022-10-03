@@ -1,28 +1,32 @@
 package me.daniel.server.wrapper;
 
 import me.daniel.server.net.Packet;
-import me.daniel.server.net.SPacketKeepalive;
+import me.daniel.server.net.out.SPacketKeepalive;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.HexFormat;
 
 public class Player {
     private final Socket socket;
-    private DataOutputStream dos;
-    private DataInputStream dis;
+    public final McOutputStream os;
+    public final McInputStream is;
 
     public Player(Socket socket) {
         this.socket = socket;
+
+        OutputStream _os;
+        InputStream _is;
         try {
-            dos = new DataOutputStream(socket.getOutputStream());
-            dis = new DataInputStream(socket.getInputStream());
+            _os = socket.getOutputStream();
+            _is = socket.getInputStream();
         } catch (IOException e) {
             e.printStackTrace();
+            throw new IllegalStateException("Cannot get player I/O streams from socket!");
         }
+
+        this.os = new McOutputStream(_os);
+        this.is = new McInputStream(_is);
     }
 
     public boolean isConnected() {
@@ -47,15 +51,12 @@ public class Player {
 
     public void send(byte[] b) {
         try {
-            dos.write(b);
-//			Thread.sleep(10); //Force the packets to be sent as their own rather than mushed together. F*ck you tcp stack >;(
-            dos.flush();
-        } catch (SocketException e) {
-        } catch (IOException e) {
+            os.write(b);
+        } catch (IOException ignored) {
         }
-//		  catch (InterruptedException e) {}
     }
 
+    @Deprecated
     public int read() {
         try {
             /*
@@ -69,7 +70,7 @@ public class Player {
              * Turns out that the InputStreamReader class isn't meant to read raw byte data,
              * like the stuff sent in the minecraft protocol (:
              */
-            return dis.read();
+            return is.read();
             /* For memorial reasons:
              * int read = ((byte)isr.read) & 0xFF; //isr instanceof InputStreamReader on socket.getInputStream()
              * return read;

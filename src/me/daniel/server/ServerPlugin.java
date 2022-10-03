@@ -19,6 +19,10 @@ public class ServerPlugin extends JavaPlugin {
         }
     }
 
+    public static GameServer getMyServer() {
+        return server;
+    }
+
     @Override
     public void onDisable() {
         server.stop();

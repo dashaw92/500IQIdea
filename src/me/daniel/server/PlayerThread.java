@@ -1,6 +1,7 @@
 package me.daniel.server;
 
-import me.daniel.server.net.*;
+import me.daniel.server.net.in.CLogin;
+import me.daniel.server.net.out.*;
 import me.daniel.server.wrapper.Player;
 
 import java.util.ArrayList;
@@ -37,9 +38,7 @@ public class PlayerThread implements Runnable {
         return player;
     }
 
-    @SuppressWarnings("deprecation")
     public void disconnect() {
-        ServerPlugin.server.setUsers(ServerPlugin.server.getUsers() - 1);
         connected = false;
         thread.stop();
         player.close();
@@ -60,13 +59,10 @@ public class PlayerThread implements Runnable {
                 w_keepAlive = System.currentTimeMillis();
             }
             var inByte = player.read();
-//			System.out.printf("Packet read: %02Xd", inByte);
+//			System.out.println("Packet read: %02X".formatted(inByte));
             switch (inByte) {
                 case 0x00 -> {
-                    byte[] read = new byte[4];
-                    for (int i = 0; i < 4; i++) {
-                        read[i] = (byte) player.read();
-                    }
+                    int id = player.is.readIntMc();
                     r_keepAlive = System.currentTimeMillis();
                 }
                 case 0x02 -> {
@@ -77,24 +73,24 @@ public class PlayerThread implements Runnable {
                         break;
                     }
                     player.send(new SPacketHandshake());
-                    player.read();
+                    String ign = player.is.readString16();
+                    System.out.println("Player %s is connecting!".formatted(ign));
                     player.send(new SPacketLogin());
                     player.read();
+//                    var login = new CLogin(player.is);
+//                    System.out.println("Player %s logged in with protocol version %d!".formatted(login.ign, login.protocolVersion));
                     player.send(new SPacketPlayerLookAndPosition());
-                    ServerPlugin.server.setUsers(ServerPlugin.server.getUsers() + 1);
                     connected = true;
                 }
                 case 0x03 -> {
-                    System.out.println("Chat packet, read: " + player.read());
+                    System.out.println("Chat packet, read: " + player.is.readString16());
                     player.send(new SPacketChat("Testing :D"));
                 }
                 case 0xFE -> {
                     player.send(new SPacketServerListPing(ServerPlugin.server.getMotd(), ServerPlugin.server.getUsers(), ServerPlugin.server.getSlots()));
                     disconnect();
                 }
-                case 0xFF -> {
-                    disconnect();
-                }
+                case 0xFF -> disconnect();
             }
         }
     }

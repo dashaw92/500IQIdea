@@ -1,7 +1,7 @@
 package me.daniel.server;
 
 import me.daniel.server.net.Packet;
-import me.daniel.server.net.SPacketKick;
+import me.daniel.server.net.out.SPacketKick;
 import me.daniel.server.wrapper.Player;
 
 import java.io.IOException;
@@ -27,22 +27,17 @@ public class GameServer {
     public void start() throws IOException {
         System.out.println("Starting my server on port " + port + ".");
         socket = new ServerSocket(port);
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    while (true) {
-                        Socket client = socket.accept();
-                        client.setTcpNoDelay(true);
-                        new PlayerThread(new Player(client));
-                    }
-                } catch (SocketException e) {
-                } catch (IOException e) {
-                    e.printStackTrace();
+        new Thread(() -> {
+            try {
+                while (true) {
+                    Socket client = socket.accept();
+                    client.setTcpNoDelay(true);
+                    new PlayerThread(new Player(client));
                 }
+            } catch (SocketException ignored) {
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
         }).start();
     }
 
@@ -54,7 +49,7 @@ public class GameServer {
         users = 0;
         try {
             socket.close();
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
     }
 
@@ -70,10 +65,6 @@ public class GameServer {
 
     public int getUsers() {
         return users;
-    }
-
-    public void setUsers(int i) {
-        users = i;
     }
 
     public int getSlots() {
