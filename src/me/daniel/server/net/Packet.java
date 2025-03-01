@@ -20,27 +20,19 @@ public abstract class Packet {
         stream.writeByteMc(id);
 
         for (var obj : data) {
-            if (obj instanceof Byte byt) {
-                stream.writeByteMc(byt);
-            } else if (obj instanceof Short shrt) {
-                stream.writeShortMc(shrt);
-            } else if (obj instanceof Integer num) {
-                stream.writeIntMc(num);
-            } else if (obj instanceof Long lng) {
-                stream.writeLongMc(lng);
-            } else if (obj instanceof Float fl) {
-                stream.writeFloatMc(fl);
-            } else if (obj instanceof Double dbl) {
-                stream.writeDoubleMc(dbl);
-            } else if (obj instanceof String str) {
-                stream.writeString16(str);
-            } else if (obj instanceof Boolean bool) {
-                stream.writeBoolMc(bool);
-            } else if (obj instanceof byte[] arr) {
-                stream.writeMc(arr);
-            } else {
-                if (obj == null) continue;
-                System.err.println("Unknown object type " + obj.getClass().getSimpleName());
+            switch(obj) {
+                case Byte byt -> stream.writeByteMc(byt);
+                case Short shrt -> stream.writeShortMc(shrt);
+                case Integer num -> stream.writeIntMc(num);
+                case Long lng -> stream.writeLongMc(lng);
+                case Float fl -> stream.writeFloatMc(fl);
+                case Double dbl -> stream.writeDoubleMc(dbl);
+                case String str -> stream.writeString16(str);
+                case Boolean bool -> stream.writeBoolMc(bool);
+                case byte[] arr -> stream.writeMc(arr);
+                default -> {
+                    System.err.println("Unknown object type " + obj.getClass().getSimpleName());
+                }
             }
         }
 

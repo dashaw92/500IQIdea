@@ -41,7 +41,6 @@ public class PlayerThread implements Runnable {
 
     public void disconnect() {
         connected = false;
-        thread.stop();
         player.close();
     }
 
@@ -59,8 +58,8 @@ public class PlayerThread implements Runnable {
 //                player.send(new SPacketKeepalive(2)); //TODO: Implement random id here
 //                w_keepAlive = System.currentTimeMillis();
 //            }
-            var inByte = player.read();
-//			System.out.println("Packet read: %02X".formatted(inByte));
+            var inByte = player.is.readUByteMC();
+			System.out.printf("Packet read: %02X%n", inByte);
             switch (inByte) {
                 case 0x00 -> {
                     int id = player.is.readIntMc();
@@ -68,7 +67,7 @@ public class PlayerThread implements Runnable {
                 }
                 case 0x01 -> {
                     var login = new CLogin(player.is);
-                    System.out.println("Player %s logged in with protocol version %d!".formatted(login.ign, login.protocolVersion));
+                    System.out.printf("Player %s logged in with protocol version %d!%n", login.ign(), login.protocolVersion());
                     player.send(new SPacketLogin());
                     player.send(new SPacketPlayerLookAndPosition());
                     player.os.writeByteMc((byte) 0x03);
@@ -83,7 +82,7 @@ public class PlayerThread implements Runnable {
                         break;
                     }
                     String ign = player.is.readString16();
-                    System.out.println("Player %s is connecting!".formatted(ign));
+                    System.out.printf("Player %s is connecting!%n", ign);
                     player.send(new SPacketHandshake());
                 }
                 case 0x03 -> {
@@ -220,7 +219,7 @@ public class PlayerThread implements Runnable {
                 case 0xFF -> {
                     String reason = player.is.readString16();
                     disconnect();
-                    System.out.println("Player left with reason: %s".formatted(reason));
+                    System.out.printf("Player left with reason: %s%n", reason);
                 }
             }
         }

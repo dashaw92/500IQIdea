@@ -74,6 +74,16 @@ public final class McInputStream extends DataInputStream {
         }
     }
 
+    public int readUByteMC() {
+        try {
+            return readUnsignedByte();
+        } catch (IOException e) {
+            System.err.println("Failed to read ubyte from input stream.");
+            ex.printStackTrace();
+            return -1;
+        }
+    }
+
     public byte readByteMc() {
         try {
             return readByte();
