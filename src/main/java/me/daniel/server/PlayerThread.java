@@ -13,7 +13,7 @@ public class PlayerThread implements Runnable {
     private static final List<PlayerThread> players = new ArrayList<>();
     private final Player player;
     private final Thread thread;
-    private boolean connected = false; //Is the player already in play state? @53
+    private boolean connected = true; //Is the player already in play state? @53
     private long w_keepAlive, r_keepAlive;
 
     public PlayerThread(Player player) {
@@ -46,7 +46,7 @@ public class PlayerThread implements Runnable {
 
     @Override
     public void run() {
-        while (player.isConnected()) {
+        while (connected) {
             //Once every 5 seconds
 //            if (connected && System.currentTimeMillis() - w_keepAlive > 20) {
 //                if (System.currentTimeMillis() - r_keepAlive > (20 * 500)) {
@@ -58,7 +58,7 @@ public class PlayerThread implements Runnable {
 //                player.send(new SPacketKeepalive(2)); //TODO: Implement random id here
 //                w_keepAlive = System.currentTimeMillis();
 //            }
-            var inByte = player.is.readUByteMC();
+            var inByte = player.read();
 			System.out.printf("Packet read: %02X%n", inByte);
             switch (inByte) {
                 case 0x00 -> {
@@ -67,7 +67,7 @@ public class PlayerThread implements Runnable {
                 }
                 case 0x01 -> {
                     var login = new CLogin(player.is);
-                    System.out.printf("Player %s logged in with protocol version %d!%n", login.ign(), login.protocolVersion());
+                    System.out.printf("Player %s logged in with protocol version %d!%n", login.ign().trim(), login.protocolVersion());
                     player.send(new SPacketLogin());
                     player.send(new SPacketPlayerLookAndPosition());
                     player.os.writeByteMc((byte) 0x03);
@@ -75,7 +75,7 @@ public class PlayerThread implements Runnable {
                     connected = true;
                 }
                 case 0x02 -> {
-                    if (connected) break; //TODO maybe not needed anymore due to DataInputStream vs InputStreamReader?
+//                    if (connected) break; //TODO maybe not needed anymore due to DataInputStream vs InputStreamReader?
                     if (ServerPlugin.server.getUsers() >= ServerPlugin.server.getSlots()) {
                         player.send(new SPacketKick("Server is full."));
                         disconnect();
