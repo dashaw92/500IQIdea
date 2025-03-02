@@ -1,2 +1,0 @@
-#filters out all but server traffic
-tcp.port == 25065 and data.data

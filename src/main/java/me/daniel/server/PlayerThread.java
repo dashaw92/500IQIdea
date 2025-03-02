@@ -14,7 +14,7 @@ public class PlayerThread implements Runnable {
     private final Player player;
     private final Thread thread;
     private boolean connected = true; //Is the player already in play state? @53
-    private long w_keepAlive, r_keepAlive;
+    private long r_keepAlive;
 
     public PlayerThread(Player player) {
         this.player = player;
@@ -70,8 +70,7 @@ public class PlayerThread implements Runnable {
                     System.out.printf("Player %s logged in with protocol version %d!%n", login.ign().trim(), login.protocolVersion());
                     player.send(new SPacketLogin());
                     player.send(new SPacketPlayerLookAndPosition());
-                    player.os.writeByteMc((byte) 0x03);
-                    player.os.writeString16("Hello!");
+                    player.send(new SPacketChat("Hello!"));
                     connected = true;
                 }
                 case 0x02 -> {

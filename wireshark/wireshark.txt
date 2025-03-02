@@ -1,0 +1,2 @@
+mc && tcp.port == 25065
+mc && mc.packet_id == 0xFE

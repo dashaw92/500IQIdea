@@ -6,7 +6,7 @@ This plugin is for Minecraft release 1.0.
 
 This plugin was originally just a proof of concept, but now I plan on writing an actual server with it. The goal is to write enough to support an API which can in turn be used to write a server in a plugin:
 
-![Server topology diagram](./diagram.png)  
+![Server topology diagram](./readme/diagram.png)  
 *Generated with [http://www.webgraphviz.com/](http://www.webgraphviz.com/)*
 
 ### Installing this plugin
@@ -15,11 +15,11 @@ Drop the plugin jar into your server's plugins folder, reload the server, and co
 
 Working server list ping (`0xFE` Client -> Server, `0xFF` Server -> Client)
 
-![Working server list ping to show status](./serverlist.png)
+![Working server list ping to show status](./readme/serverlist.png)
 
 Logging into the server:
 
-![logging in](./login.gif)
+![logging in](./readme/login.gif)
 
 ### For other devs
 
