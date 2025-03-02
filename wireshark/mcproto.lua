@@ -3,10 +3,30 @@ mc = Proto("mc", "Minecraft 1.0.0")
 local packet_id = ProtoField.uint8("mc.packet_id", "Packet ID", base.HEX)
 
 local packet_kick_reason = ProtoField.string("mc.packet.kick.reason", "Kick Reason", base.ASCII)
+local packet_handshake_body = ProtoField.string("mc.packet.handshake.body", "Handshake Body", base.ASCII)
+local packet_login_server_eid = ProtoField.int32("mc.packet.login.server.eid", "Entity ID", base.DEC)
+local packet_login_server_seed = ProtoField.int64("mc.packet.login.server.seed", "World Seed", base.DEC)
+local packet_login_server_gamemode = ProtoField.int32("mc.packet.login.server.gamemode", "Gamemode", base.DEC)
+local packet_login_server_dimension = ProtoField.int32("mc.packet.login.server.dimension", "Dimension", base.DEC)
+local packet_login_server_difficulty = ProtoField.int32("mc.packet.login.server.difficulty", "Difficulty", base.DEC)
+local packet_login_server_height = ProtoField.int32("mc.packet.login.server.height", "World Height", base.DEC)
+local packet_login_server_max_players = ProtoField.int32("mc.packet.login.server.max_players", "Max Players", base.DEC)
+local packet_login_client_protocol = ProtoField.int32("mc.packet.login.client.proto", "Protocol Version", base.DEC)
+local packet_login_client_username = ProtoField.string("mc.packet.login.client.username", "Username", base.ASCII)
 
 mc.fields = {
    packet_id,
-   packet_kick_reason -- 0xFF (Kick/Disconnect)
+   packet_login_server_eid, -- 0x01 (Login)
+   packet_login_server_seed,
+   packet_login_server_gamemode,
+   packet_login_server_dimension,
+   packet_login_server_difficulty,
+   packet_login_server_height,
+   packet_login_server_max_players,
+   packet_login_client_protocol,
+   packet_login_client_username, -- </0x01>
+   packet_handshake_body, -- 0x02 (Handshake (C <-> S both handled by one impl))
+   packet_kick_reason, -- 0xFF (Kick/Disconnect)
 }
 
 function mc.dissector(buffer, pinfo, tree)
@@ -33,11 +53,32 @@ function decode_0x00(tree, buffer, length)
 end
 
 function decode_0x01(tree, buffer, length)
-
+  local field1 = buffer(0, 4):int()
+  local string2 = readMcStr(buffer:range(4):tvb(), length - 5)
+  if string2 == "" then
+    -- Server -> Client
+    local seed = buffer(6, 8):int64()
+    local gamemode = buffer(14, 4):int()
+    local dim = buffer(18, 1):int()
+    local difficulty = buffer(19, 1):int()
+    local height = buffer(20, 1):uint()
+    local max_players = buffer(21, 1):uint()
+    tree:add(packet_login_server_eid, field1)
+    tree:add(packet_login_server_seed, seed)
+    tree:add(packet_login_server_gamemode, gamemode)
+    tree:add(packet_login_server_dimension, dim)
+    tree:add(packet_login_server_difficulty, difficulty)
+    tree:add(packet_login_server_height, height)
+    tree:add(packet_login_server_max_players, max_players)
+  else
+    -- Client -> Server
+    tree:add(packet_login_client_protocol, field1)
+    tree:add(packet_login_client_username, string2)
+  end
 end
 
 function decode_0x02(tree, buffer, length)
-
+  tree:add(packet_handshake_body, readMcStr(buffer, length))
 end
 
 function decode_0x03(tree, buffer, length)
