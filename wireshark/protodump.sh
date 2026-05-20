@@ -1,5 +1,36 @@
 #!/usr/bin/env bash
 
+fieldTypeToWireshark() {
+  case "$1" in
+    bool)
+      echo "bool"
+      ;;
+    *byte*)
+      echo "int8"
+      ;;
+    short)
+      echo "int16"
+      ;;
+    int)
+      echo "int32"
+      ;;
+    long)
+      echo "int64"
+      ;;
+    float)
+      echo "float"
+      ;;
+    double)
+      echo "double"
+      ;;
+    string16)
+      echo "string"
+      ;;
+    *)
+      echo "string"
+      ;;
+  esac
+}
 
 doFields() {
   local name="$1"
@@ -7,23 +38,34 @@ doFields() {
   local direction="$3"
 
   if [ "$fields" == "null" ]; then
-    echo "-- NO-OP"
+    echo "    -- NO-OP"
     return
   fi
-  echo "-- TODO"
+  echo "    -- TODO"
 }
 
-json=$(<'./wiki.vg 1.0.0/protocol_claude.json')
-len=$(echo "$json" | jq '.protocol.packets | length')
+declare -A packets
+i=0
+while read -r data; do
+  IFS="#" read -ra packet <<< "$data"
+  packets["${i}_ID"]="${packet[0]}"
+  packets["${i}_NAME"]="${packet[1]}"
+  packets["${i}_DESC"]="${packet[2]}"
+  packets["${i}_DIR"]="${packet[3]}"
+  packets["${i}_FIELDS"]="${packet[4]}"
+  ((i++))
+done <<< $(jq -r ".protocol.packets.[] | \"\\(.id)#\\(.name)#\\(.description)#\\(.direction)#\\(.fields)\"" < "./wiki.vg 1.0.0/protocol_claude.json")
 
 cd templates
-for ((i = 0; i < "$len"; i++)); do
-  packet=$(echo "$json" | jq ".protocol.packets[$i]")
-  id=$(echo "$packet" | jq -r ".id")
-  name=$(echo "$packet" | jq -r ".name")
-  desc=$(echo "$packet" | jq -r ".description")
-  direction=$(echo "$packet" | jq -r ".direction")
-  fields=$(echo "$packet" | jq ".fields")
+rm table/table.lua
+rm decode/*.lua
+
+for ((i = 0; i < "$((${#packets[@]} / 5))"; i++)); do
+  id="${packets[${i}_ID]}"
+  name="${packets[${i}_NAME]}"
+  desc="${packets[${i}_DESC]}"
+  direction="${packets[${i}_DIR]}"
+  fields="${packets[${i}_FIELDS]}"
 
   cat << EOF > "decode/decode_$id.lua"
 -- $name: $desc

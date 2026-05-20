@@ -22,3 +22,22 @@ function readMcStr(buffer, length)
   end
   return str
 end
+
+function mc.dissector(buffer, pinfo, tree)
+  length = buffer:len()
+  if length == 0 then return end
+
+  pinfo.cols.protocol = mc.name
+  local subtree = tree:add(mc, buffer(), "Minecraft")
+
+  local id = buffer(0, 1)
+  subtree:add(packet_id, id):append_text(" (".. packetName(id:uint()) ..")")
+
+  -- Packet data, stripped of the packet ID
+  local data = buffer:range(1):tvb()
+  packetDecode(id:uint(), subtree, data, length - 1)
+end
+
+local port = DissectorTable.get("tcp.port")
+port:add(25065, mc)
+port:add(25565, mc)
