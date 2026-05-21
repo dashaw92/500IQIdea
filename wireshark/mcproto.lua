@@ -2,6 +2,7 @@ mc = Proto("mc", "Minecraft 1.0.0")
 
 local packet_id = ProtoField.uint8("mc.packet_id", "Packet ID", base.HEX)
 
+local packet_keepalive_heartbeat = ProtoField.int32("mc.packet.keepalive.heartbeat", "Heartbeat", base.DEC)
 local packet_kick_reason = ProtoField.string("mc.packet.kick.reason", "Kick Reason", base.ASCII)
 local packet_handshake_body = ProtoField.string("mc.packet.handshake.body", "Handshake Body", base.ASCII)
 local packet_login_server_eid = ProtoField.int32("mc.packet.login.server.eid", "Entity ID", base.DEC)
@@ -13,9 +14,11 @@ local packet_login_server_height = ProtoField.int32("mc.packet.login.server.heig
 local packet_login_server_max_players = ProtoField.int32("mc.packet.login.server.max_players", "Max Players", base.DEC)
 local packet_login_client_protocol = ProtoField.int32("mc.packet.login.client.proto", "Protocol Version", base.DEC)
 local packet_login_client_username = ProtoField.string("mc.packet.login.client.username", "Username", base.ASCII)
+local packet_chat_message = ProtoField.string("mc.packet.chat.message", "Message", base.ASCII)
 
 mc.fields = {
    packet_id,
+   packet_keepalive_heartbeat, -- 0x00 (Keepalive)
    packet_login_server_eid, -- 0x01 (Login)
    packet_login_server_seed,
    packet_login_server_gamemode,
@@ -26,6 +29,7 @@ mc.fields = {
    packet_login_client_protocol,
    packet_login_client_username, -- </0x01>
    packet_handshake_body, -- 0x02 (Handshake (C <-> S both handled by one impl))
+   packet_chat_message, -- 0x03 (Chat)
    packet_kick_reason, -- 0xFF (Kick/Disconnect)
 }
 
@@ -49,7 +53,8 @@ port:add(25065, mc)
 port:add(25565, mc)
 
 function decode_0x00(tree, buffer, length)
-
+  local heartbeat = buffer(0, 4):int()
+  tree:add(packet_keepalive_heartbeat, heartbeat)
 end
 
 function decode_0x01(tree, buffer, length)
@@ -82,7 +87,7 @@ function decode_0x02(tree, buffer, length)
 end
 
 function decode_0x03(tree, buffer, length)
-
+  tree:add(packet_chat_message, readMcStr(buffer, length))
 end
 
 function decode_0x04(tree, buffer, length)
