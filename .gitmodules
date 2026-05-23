@@ -1,0 +1,3 @@
+[submodule "wireshark/wireshark_lua_api"]
+	path = wireshark/wireshark_lua_api
+	url = https://github.com/JCalHij/wireshark_lua_api
