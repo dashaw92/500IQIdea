@@ -23,7 +23,7 @@ Logging into the server:
 
 ### For other devs
 
-I built this against `craftbukkit-1.0.0-SNAPSHOT.jar`
+I built this against `craftbukkit-1.0.0-SNAPSHOT.jar`.
 
 ### Licensing
 
